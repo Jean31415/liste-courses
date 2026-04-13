@@ -50,6 +50,7 @@ function App() {
         uncheckedCount={list.uncheckedCount}
         totalCount={list.totalCount}
         onToggle={list.toggleItem}
+        onUpdateQty={list.updateQty}
         onDeleteChecked={list.deleteChecked}
       />
     </div>

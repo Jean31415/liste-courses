@@ -1,13 +1,25 @@
-import type { ConsolidatedItem } from '../lib/database.types'
+import type { ListItemWithProduct } from '../lib/database.types'
 
 interface Props {
-  item: ConsolidatedItem
+  item: ListItemWithProduct
   onToggle: (id: string, checked: boolean) => void
+  onUpdateQty: (id: string, newQty: number) => void
 }
 
-export function ShoppingItem({ item, onToggle }: Props) {
+export function ShoppingItem({ item, onToggle, onUpdateQty }: Props) {
   const product = item.products
   const checked = item.checked ?? false
+  const qty = item.qty ?? 1
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onUpdateQty(item.id, qty - 1)
+  }
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (qty < 99) onUpdateQty(item.id, qty + 1)
+  }
 
   return (
     <div
@@ -46,9 +58,28 @@ export function ShoppingItem({ item, onToggle }: Props) {
         </div>
       </div>
 
-      {item.totalQty > 1 && (
-        <span className="list-item-qty">&times;{item.totalQty}</span>
-      )}
+      <div className="qty-controls" onClick={e => e.stopPropagation()}>
+        <button
+          className="qty-btn qty-btn-minus"
+          onClick={handleDecrement}
+          aria-label={qty <= 1 ? 'Supprimer' : 'Diminuer'}
+        >
+          {qty <= 1 ? (
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          ) : '−'}
+        </button>
+        <span className="qty-value">{qty}</span>
+        <button
+          className="qty-btn qty-btn-plus"
+          onClick={handleIncrement}
+          disabled={qty >= 99}
+          aria-label="Augmenter"
+        >
+          +
+        </button>
+      </div>
     </div>
   )
 }

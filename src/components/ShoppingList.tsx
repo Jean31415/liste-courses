@@ -1,4 +1,4 @@
-import type { ConsolidatedItem } from '../lib/database.types'
+import type { ListItemWithProduct } from '../lib/database.types'
 import { ShoppingItem } from './ShoppingItem'
 import { EmptyState } from './EmptyState'
 
@@ -20,18 +20,19 @@ const CATEGORY_ICONS: Record<string, string> = {
 }
 
 interface Props {
-  groupedItems: Record<string, ConsolidatedItem[]>
+  groupedItems: Record<string, ListItemWithProduct[]>
   sortedCategories: string[]
   loading: boolean
   uncheckedCount: number
   totalCount: number
   onToggle: (id: string, checked: boolean) => void
+  onUpdateQty: (id: string, newQty: number) => void
   onDeleteChecked: () => void
 }
 
 export function ShoppingList({
   groupedItems, sortedCategories, loading, uncheckedCount, totalCount,
-  onToggle, onDeleteChecked,
+  onToggle, onUpdateQty, onDeleteChecked,
 }: Props) {
   const checkedCount = totalCount - uncheckedCount
 
@@ -81,6 +82,7 @@ export function ShoppingList({
                     key={item.id}
                     item={item}
                     onToggle={onToggle}
+                    onUpdateQty={onUpdateQty}
                   />
                 ))}
               </div>

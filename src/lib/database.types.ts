@@ -256,9 +256,3 @@ export type Aisle = Database['public']['Tables']['aisles']['Row']
 export type ListItemWithProduct = ListItem & {
   products: Pick<Product, 'name' | 'brand' | 'quantity' | 'image_url' | 'category'> | null
 }
-
-// Consolidated item (merged duplicates by barcode)
-export type ConsolidatedItem = ListItemWithProduct & {
-  totalQty: number
-  sourceIds: string[]
-}

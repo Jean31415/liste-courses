@@ -408,6 +408,50 @@ body {
   flex-shrink: 0;
 }
 
+/* ── QTY CONTROLS ── */
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-radius: 20px;
+  border: 0.5px solid var(--border);
+  overflow: hidden;
+}
+
+.qty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+  font-family: 'Syne', sans-serif;
+}
+.qty-btn:hover { background: var(--bg3); }
+.qty-btn:active { background: var(--border); }
+.qty-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.qty-btn-minus { color: var(--danger); }
+.qty-btn-plus { color: var(--accent); }
+
+.qty-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 24px;
+  text-align: center;
+}
+
 /* ── EMPTY STATE ── */
 .empty-state {
   padding: 3rem 1.5rem;
