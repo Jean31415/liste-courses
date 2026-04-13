@@ -1,4 +1,4 @@
-import type { ListItemWithProduct } from '../lib/database.types'
+import type { ConsolidatedItem } from '../lib/database.types'
 import { ShoppingItem } from './ShoppingItem'
 import { EmptyState } from './EmptyState'
 
@@ -20,7 +20,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 }
 
 interface Props {
-  groupedItems: Record<string, ListItemWithProduct[]>
+  groupedItems: Record<string, ConsolidatedItem[]>
   sortedCategories: string[]
   loading: boolean
   uncheckedCount: number

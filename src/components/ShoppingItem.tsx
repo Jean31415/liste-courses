@@ -1,7 +1,7 @@
-import type { ListItemWithProduct } from '../lib/database.types'
+import type { ConsolidatedItem } from '../lib/database.types'
 
 interface Props {
-  item: ListItemWithProduct
+  item: ConsolidatedItem
   onToggle: (id: string, checked: boolean) => void
 }
 
@@ -46,8 +46,8 @@ export function ShoppingItem({ item, onToggle }: Props) {
         </div>
       </div>
 
-      {(item.qty ?? 1) > 1 && (
-        <span className="list-item-qty">&times;{item.qty}</span>
+      {item.totalQty > 1 && (
+        <span className="list-item-qty">&times;{item.totalQty}</span>
       )}
     </div>
   )

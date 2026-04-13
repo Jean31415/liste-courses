@@ -1,9 +1,36 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { TypedSupabaseClient } from '../lib/supabase'
-import type { ListItemWithProduct } from '../lib/database.types'
+import type { ListItemWithProduct, ConsolidatedItem } from '../lib/database.types'
+
+function consolidateItems(items: ListItemWithProduct[]): ConsolidatedItem[] {
+  const map = new Map<string, ConsolidatedItem>()
+
+  for (const item of items) {
+    const key = item.barcode
+    const existing = map.get(key)
+
+    if (existing) {
+      existing.totalQty += item.qty ?? 1
+      existing.sourceIds.push(item.id)
+      // If any sub-item is unchecked, the consolidated item is unchecked
+      if (!item.checked) {
+        existing.checked = false
+        existing.checked_at = null
+      }
+    } else {
+      map.set(key, {
+        ...item,
+        totalQty: item.qty ?? 1,
+        sourceIds: [item.id],
+      })
+    }
+  }
+
+  return Array.from(map.values())
+}
 
 export function useShoppingList(client: TypedSupabaseClient | null, familyId: string | null) {
-  const [items, setItems] = useState<ListItemWithProduct[]>([])
+  const [rawItems, setRawItems] = useState<ListItemWithProduct[]>([])
   const [loading, setLoading] = useState(false)
 
   const loadItems = useCallback(async () => {
@@ -17,7 +44,7 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
       .order('created_at', { ascending: false })
 
     if (!error && data) {
-      setItems(data as ListItemWithProduct[])
+      setRawItems(data as ListItemWithProduct[])
     }
     setLoading(false)
   }, [client, familyId])
@@ -52,13 +79,20 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
     }
   }, [client, familyId, loadItems])
 
+  // Consolidated items (merged by barcode)
+  const items = useMemo(() => consolidateItems(rawItems), [rawItems])
+
   const toggleItem = useCallback(async (itemId: string, checked: boolean) => {
     if (!client) return
 
+    // Find the consolidated item to get all source IDs
+    const consolidated = items.find(i => i.id === itemId)
+    const idsToUpdate = consolidated?.sourceIds ?? [itemId]
+
     // Optimistic update
-    setItems(prev =>
+    setRawItems(prev =>
       prev.map(item =>
-        item.id === itemId
+        idsToUpdate.includes(item.id)
           ? { ...item, checked, checked_at: checked ? new Date().toISOString() : null }
           : item
       )
@@ -70,25 +104,25 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
         checked,
         checked_at: checked ? new Date().toISOString() : null,
       })
-      .eq('id', itemId)
-  }, [client])
+      .in('id', idsToUpdate)
+  }, [client, items])
 
   const deleteChecked = useCallback(async () => {
     if (!client) return
-    const checkedIds = items.filter(i => i.checked).map(i => i.id)
+    const checkedIds = rawItems.filter(i => i.checked).map(i => i.id)
     if (checkedIds.length === 0) return
 
     // Optimistic update
-    setItems(prev => prev.filter(i => !i.checked))
+    setRawItems(prev => prev.filter(i => !i.checked))
 
     await client.from('list_items').delete().in('id', checkedIds)
-  }, [client, items])
+  }, [client, rawItems])
 
   const uncheckedCount = items.filter(i => !i.checked).length
   const totalCount = items.length
 
   // Group items by category
-  const groupedItems = items.reduce<Record<string, ListItemWithProduct[]>>((acc, item) => {
+  const groupedItems = items.reduce<Record<string, ConsolidatedItem[]>>((acc, item) => {
     const category = item.products?.category || 'Autres'
     if (!acc[category]) acc[category] = []
     acc[category].push(item)
