@@ -46,8 +46,8 @@ export function FamilySetup({ onCreateFamily, onJoinFamily, error, loading }: Pr
         <input
           className="setup-input"
           type="text"
-          placeholder="Code famille (ex: a3f8c12b)"
-          maxLength={8}
+          placeholder="Code famille (ex: 1234)"
+          maxLength={20}
           value={token}
           onChange={e => setToken(e.target.value.toLowerCase())}
           onKeyDown={e => e.key === 'Enter' && token.trim() && onJoinFamily(token.trim())}

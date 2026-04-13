@@ -279,6 +279,46 @@ body {
   font-size: 13px;
 }
 
+/* ── CATEGORY GROUP ── */
+.category-group {
+  border-bottom: 1px solid var(--border);
+}
+.category-group:last-child {
+  border-bottom: none;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.category-icon {
+  font-size: 16px;
+}
+
+.category-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.category-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 0.5px solid var(--border);
+}
+
 /* ── LIST ITEM ── */
 .list-item {
   display: flex;

@@ -11,7 +11,7 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
     setLoading(true)
     const { data, error } = await client
       .from('list_items')
-      .select('*, products(name, brand, quantity, image_url)')
+      .select('*, products(name, brand, quantity, image_url, category)')
       .eq('family_id', familyId)
       .order('checked', { ascending: true })
       .order('created_at', { ascending: false })
@@ -87,8 +87,25 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
   const uncheckedCount = items.filter(i => !i.checked).length
   const totalCount = items.length
 
+  // Group items by category
+  const groupedItems = items.reduce<Record<string, ListItemWithProduct[]>>((acc, item) => {
+    const category = item.products?.category || 'Autres'
+    if (!acc[category]) acc[category] = []
+    acc[category].push(item)
+    return acc
+  }, {})
+
+  // Sort categories alphabetically, "Autres" always last
+  const sortedCategories = Object.keys(groupedItems).sort((a, b) => {
+    if (a === 'Autres') return 1
+    if (b === 'Autres') return -1
+    return a.localeCompare(b, 'fr')
+  })
+
   return {
     items,
+    groupedItems,
+    sortedCategories,
     loading,
     toggleItem,
     deleteChecked,

@@ -74,8 +74,8 @@ export function useFamily() {
 
   const joinFamily = useCallback(async (token: string) => {
     const trimmed = token.trim().toLowerCase()
-    if (trimmed.length < 6) {
-      setState(s => ({ ...s, error: 'Code trop court (min 6 caractères)' }))
+    if (trimmed.length < 4) {
+      setState(s => ({ ...s, error: 'Code trop court (min 4 caractères)' }))
       return
     }
     await initFromToken(trimmed)

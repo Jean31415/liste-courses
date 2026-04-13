@@ -134,6 +134,7 @@ export type Database = {
         Row: {
           barcode: string
           brand: string | null
+          category: string | null
           created_at: string | null
           image_url: string | null
           name: string | null
@@ -147,6 +148,7 @@ export type Database = {
         Insert: {
           barcode: string
           brand?: string | null
+          category?: string | null
           created_at?: string | null
           image_url?: string | null
           name?: string | null
@@ -160,6 +162,7 @@ export type Database = {
         Update: {
           barcode?: string
           brand?: string | null
+          category?: string | null
           created_at?: string | null
           image_url?: string | null
           name?: string | null
@@ -251,5 +254,5 @@ export type Aisle = Database['public']['Tables']['aisles']['Row']
 
 // List item with joined product data
 export type ListItemWithProduct = ListItem & {
-  products: Pick<Product, 'name' | 'brand' | 'quantity' | 'image_url'> | null
+  products: Pick<Product, 'name' | 'brand' | 'quantity' | 'image_url' | 'category'> | null
 }

@@ -2,8 +2,26 @@ import type { ListItemWithProduct } from '../lib/database.types'
 import { ShoppingItem } from './ShoppingItem'
 import { EmptyState } from './EmptyState'
 
+const CATEGORY_ICONS: Record<string, string> = {
+  'Biscuits & Gâteaux': '🍪',
+  'Boulangerie & Céréales': '🥖',
+  'Boissons': '🥤',
+  'Fruits & Légumes': '🥕',
+  'Viandes & Poissons': '🥩',
+  'Produits laitiers': '🧀',
+  'Surgelés': '🧊',
+  'Épicerie salée': '🥫',
+  'Épicerie sucrée': '🍫',
+  'Hygiène & Beauté': '🧴',
+  'Entretien': '🧹',
+  'Bébé': '🍼',
+  'Animaux': '🐾',
+  'Autres': '📦',
+}
+
 interface Props {
-  items: ListItemWithProduct[]
+  groupedItems: Record<string, ListItemWithProduct[]>
+  sortedCategories: string[]
   loading: boolean
   uncheckedCount: number
   totalCount: number
@@ -12,7 +30,7 @@ interface Props {
 }
 
 export function ShoppingList({
-  items, loading, uncheckedCount, totalCount,
+  groupedItems, sortedCategories, loading, uncheckedCount, totalCount,
   onToggle, onDeleteChecked,
 }: Props) {
   const checkedCount = totalCount - uncheckedCount
@@ -51,12 +69,21 @@ export function ShoppingList({
           ) : totalCount === 0 ? (
             <EmptyState />
           ) : (
-            items.map(item => (
-              <ShoppingItem
-                key={item.id}
-                item={item}
-                onToggle={onToggle}
-              />
+            sortedCategories.map(category => (
+              <div key={category} className="category-group">
+                <div className="category-header">
+                  <span className="category-icon">{CATEGORY_ICONS[category] || '📦'}</span>
+                  <span className="category-name">{category}</span>
+                  <span className="category-count">{groupedItems[category].length}</span>
+                </div>
+                {groupedItems[category].map(item => (
+                  <ShoppingItem
+                    key={item.id}
+                    item={item}
+                    onToggle={onToggle}
+                  />
+                ))}
+              </div>
             ))
           )}
         </div>

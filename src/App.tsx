@@ -44,7 +44,8 @@ function App() {
       />
 
       <ShoppingList
-        items={list.items}
+        groupedItems={list.groupedItems}
+        sortedCategories={list.sortedCategories}
         loading={list.loading}
         uncheckedCount={list.uncheckedCount}
         totalCount={list.totalCount}
