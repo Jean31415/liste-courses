@@ -45,7 +45,7 @@ export function useScanner(client: TypedSupabaseClient | null, familyId: string 
         .from('products')
         .select('barcode, name, brand, quantity, image_url, category')
         .eq('barcode', barcode)
-        .single()
+        .maybeSingle()
 
       if (existing && existing.name) {
         setProduct({
@@ -118,7 +118,7 @@ export function useScanner(client: TypedSupabaseClient | null, familyId: string 
         .select('id, qty')
         .eq('family_id', familyId)
         .eq('barcode', productData.barcode)
-        .single()
+        .maybeSingle()
 
       if (existing) {
         // Increment qty
