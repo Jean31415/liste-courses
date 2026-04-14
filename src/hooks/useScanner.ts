@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { TypedSupabaseClient } from '../lib/supabase'
+import { normalizeName, toPseudoBarcode } from '../lib/voice'
 
 const CATEGORIES = [
   'Biscuits & Gâteaux',
@@ -18,7 +19,7 @@ const CATEGORIES = [
   'Autres',
 ] as const
 
-export type ScannerStep = 'idle' | 'scanning' | 'loading' | 'found' | 'manual' | 'done'
+export type ScannerStep = 'idle' | 'scanning' | 'voicing' | 'loading' | 'found' | 'manual' | 'done'
 
 export interface ScannedProduct {
   barcode: string
@@ -156,6 +157,62 @@ export function useScanner(client: TypedSupabaseClient | null, familyId: string 
     setError(null)
   }, [])
 
+  const startVoice = useCallback(() => {
+    setStep('voicing')
+    setError(null)
+  }, [])
+
+  const processVoice = useCallback(async (transcript: string) => {
+    if (!client || !familyId) return
+    const normalized = normalizeName(transcript)
+    if (normalized.length < 2) {
+      setError('Dictée trop courte, réessaie.')
+      setStep('idle')
+      return
+    }
+
+    setStep('loading')
+    setError(null)
+
+    try {
+      // Search existing products by name (ILIKE — case-insensitive).
+      const { data: matches } = await client
+        .from('products')
+        .select('barcode, name, brand, quantity, image_url, category')
+        .ilike('name', `%${normalized}%`)
+        .order('name', { ascending: true })
+        .limit(1)
+
+      const match = matches?.[0]
+      if (match && match.name) {
+        setProduct({
+          barcode: match.barcode,
+          name: match.name,
+          brand: match.brand || '',
+          quantity: match.quantity || '',
+          image_url: match.image_url || '',
+          category: match.category || 'Autres',
+        })
+        setStep('found')
+        return
+      }
+
+      // No existing product → create a fresh voice entry.
+      setProduct({
+        barcode: toPseudoBarcode(normalized),
+        name: transcript.trim(),
+        brand: '',
+        quantity: '',
+        image_url: '',
+        category: 'Autres',
+      })
+      setStep('manual')
+    } catch {
+      setError('Erreur de connexion')
+      setStep('idle')
+    }
+  }, [client, familyId])
+
   return {
     step,
     product,
@@ -166,6 +223,8 @@ export function useScanner(client: TypedSupabaseClient | null, familyId: string 
     setProduct,
     setStep,
     startScanning,
+    startVoice,
+    processVoice,
     reset,
   }
 }
