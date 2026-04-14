@@ -22,12 +22,7 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
     setLoading(false)
   }, [client, familyId])
 
-  // Initial load
-  useEffect(() => {
-    loadItems()
-  }, [loadItems])
-
-  // Realtime subscription
+  // Initial load + realtime subscription (merged to keep setState out of effect body)
   useEffect(() => {
     if (!client || !familyId) return
 
@@ -45,7 +40,11 @@ export function useShoppingList(client: TypedSupabaseClient | null, familyId: st
           loadItems()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          loadItems()
+        }
+      })
 
     return () => {
       client.removeChannel(channel)

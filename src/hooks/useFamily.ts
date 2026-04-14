@@ -13,26 +13,16 @@ interface FamilyState {
 }
 
 export function useFamily() {
-  const [state, setState] = useState<FamilyState>({
+  const [state, setState] = useState<FamilyState>(() => ({
     familyId: null,
     familyName: null,
     familyToken: null,
     client: null,
-    loading: true,
+    loading: localStorage.getItem(STORAGE_KEY) !== null,
     error: null,
-  })
+  }))
 
-  // Initialize from localStorage
-  useEffect(() => {
-    const token = localStorage.getItem(STORAGE_KEY)
-    if (!token) {
-      setState(s => ({ ...s, loading: false }))
-      return
-    }
-    initFromToken(token)
-  }, [])
-
-  async function initFromToken(token: string) {
+  const initFromToken = useCallback(async (token: string) => {
     setState(s => ({ ...s, loading: true, error: null }))
     const client = createSupabaseClient(token)
     const { data, error } = await client
@@ -55,7 +45,14 @@ export function useFamily() {
       loading: false,
       error: null,
     })
-  }
+  }, [])
+
+  // Initialize from localStorage (no token → initial state already has loading: false)
+  useEffect(() => {
+    const token = localStorage.getItem(STORAGE_KEY)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot bootstrap at mount
+    if (token) initFromToken(token)
+  }, [initFromToken])
 
   const createFamily = useCallback(async (name: string) => {
     setState(s => ({ ...s, loading: true, error: null }))
@@ -70,7 +67,7 @@ export function useFamily() {
     const token = (data as { id: string; token: string }).token
     localStorage.setItem(STORAGE_KEY, token)
     await initFromToken(token)
-  }, [])
+  }, [initFromToken])
 
   const joinFamily = useCallback(async (token: string) => {
     const trimmed = token.trim().toLowerCase()
@@ -79,7 +76,7 @@ export function useFamily() {
       return
     }
     await initFromToken(trimmed)
-  }, [])
+  }, [initFromToken])
 
   const leaveFamily = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY)
