@@ -54,9 +54,14 @@ export function BarcodeScanner({ onScan, onClose }: Props) {
 
     return () => {
       mounted = false
-      if (scanner) {
-        scanner.stop().catch(() => {})
-        scanner.clear()
+      const s = scanner
+      scanner = null
+      if (s) {
+        s.stop()
+          .then(() => {
+            try { s.clear() } catch { /* noop: DOM may already be gone */ }
+          })
+          .catch(() => { /* stop can throw if not running — ignore */ })
       }
     }
   }, [handleScan, onClose])
